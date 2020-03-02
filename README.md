@@ -1,3 +1,3 @@
 # REST-JSon-Helpers
 
-Some helpers for serializing objects to Json and back using the standrad Delphi library.
+Some helpers for serializing objects to Json and back using the standard Delphi library.
