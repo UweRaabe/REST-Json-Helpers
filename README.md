@@ -1,7 +1,5 @@
 # REST-JSon-Helpers
 
-Some helpers for serializing objects to Json and back using the standard Delphi library.
-
 The unit provides some helper classes to make serializing classes into JSON a bit easier.
 
 The _JsonUTCDate_ attribute applied to ca field results in the field value being converted into UTC format when serialized into JSON format. Of course the conversion is reverted when the field is set from JSON. If the field value equals _cNoDate_ (i.e. "0000-00-00T00:00:00.000Z") conversion from/into local time format is skipped. When writing such a value it will result in a JSON _null_ object value.
