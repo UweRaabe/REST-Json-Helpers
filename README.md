@@ -2,6 +2,7 @@
 
 The unit provides some helper classes to make serializing classes into JSON a bit easier.
 
+## JsonUTCDate
 The _JsonUTCDate_ attribute applied to ca field results in the field value being converted into UTC format when serialized into JSON format. Of course the conversion is reverted when the field is set from JSON. If the field value equals _cNoDate_ (i.e. "0000-00-00T00:00:00.000Z") conversion from/into local time format is skipped. When writing such a value it will result in a JSON _null_ object value.
 
 Usage:
@@ -17,6 +18,7 @@ type
   end;
 ```
 
+## JsonStrings
 The _JsonStrings_ attribute applied to a _TStrings_ or descendant will serialize the strings to an array of string and vice versa. Note that it should always be accompanied by _JSONOwned(False)_.
 
 Usage:
@@ -29,7 +31,7 @@ type
     ...
   end;
 ```
-
+## JsonObjectList
 _JsonObjectList_ is an attribute that should be applied to a _TObjectList<T>_ instance or descendant. It makes the object being serialized to an array of object and back again. It needs an interceptor class derived from _TObjectListInterceptor<T>_ as parameter. 
 It also requires a _JSONOwned(False)_ companion.
   
