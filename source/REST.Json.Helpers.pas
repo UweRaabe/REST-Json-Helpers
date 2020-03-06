@@ -1,9 +1,14 @@
+{
+Delphi REST JSON Helpers
+Copyright(c) 2020 Uwe Raabe
+All rights reserved
+}
 unit REST.Json.Helpers;
 
 interface
 
 uses
-  System.SysUtils, System.JSON,
+  System.SysUtils, System.JSON, System.Classes,
   REST.JsonReflect;
 
 const
@@ -45,12 +50,24 @@ type
     class function ToJSONString(Source: TObject): string;
   end;
 
+type
+  TPersistentInterceptor<T: TPersistent, constructor> = class(TJSONInterceptor)
+  private
+    FProxy: T;
+    function GetProxy: T;
+  strict protected
+    property Proxy: T read GetProxy;
+  public
+    destructor Destroy; override;
+    function TypeObjectConverter(Data: TObject): TObject; override;
+  end;
+
 function IsNoDate(ADate: TDateTime): Boolean;
 
 implementation
 
 uses
-  System.Rtti, System.Classes, System.DateUtils, System.Generics.Collections,
+  System.Rtti, System.DateUtils, System.Generics.Collections,
   REST.Json;
 
 function IsNoDate(ADate: TDateTime): Boolean;
@@ -272,6 +289,27 @@ end;
 function TUTCDateTimeInterceptor.TStringProxyInterceptor.TypeStringConverter(Data: TObject): string;
 begin
   Result := (Data as TStringProxy).Value;
+end;
+
+destructor TPersistentInterceptor<T>.Destroy;
+begin
+  FProxy.Free;
+  inherited Destroy;
+end;
+
+function TPersistentInterceptor<T>.GetProxy: T;
+begin
+  if FProxy = nil then begin
+    FProxy := T.Create;
+  end;
+  Result := FProxy;
+end;
+
+function TPersistentInterceptor<T>.TypeObjectConverter(Data: TObject): TObject;
+begin
+  Result := Proxy;
+  if Data is TPersistent then
+    Proxy.Assign(TPersistent(Data));
 end;
 
 end.
