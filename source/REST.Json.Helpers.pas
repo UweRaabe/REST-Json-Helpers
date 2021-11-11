@@ -30,14 +30,14 @@ type
   TObjectListInterceptor<T: class> = class(TJSONInterceptor)
   public
     procedure AfterConstruction; override;
-    function ObjectsConverter(Data: TObject; Field: string): TListOfObjects; override;
     procedure ObjectsReverter(Data: TObject; Field: string; Args: TListOfObjects); override;
+    function TypeObjectsConverter(Data: TObject): TListOfObjects; override;
   end;
 
 type
-  JsonObjectListAttribute = class(JsonReflectAttribute)
+  JsonObjectListAttribute<T: class> = class(JsonReflectAttribute)
   public
-    constructor Create(InterceptorType: TClass);
+    constructor Create;
   end;
 
 type
@@ -147,18 +147,6 @@ begin
   ObjectType := T;
 end;
 
-function TObjectListInterceptor<T>.ObjectsConverter(Data: TObject; Field: string): TListOfObjects;
-var
-  I: Integer;
-  ctx: TRTTIContext;
-  list: TObjectList<T>;
-begin
-  list := TObjectList<T>(ctx.GetType(Data.ClassType).GetField(Field).GetValue(Data).AsObject);
-  SetLength(Result, list.Count);
-  for I := 0 to list.Count - 1 do
-    Result[I] := list.Items[I];
-end;
-
 procedure TObjectListInterceptor<T>.ObjectsReverter(Data: TObject; Field: string; Args: TListOfObjects);
 var
   ctx: TRTTIContext;
@@ -169,6 +157,17 @@ begin
   list.Clear;
   for obj in Args do
     list.Add(T(obj));
+end;
+
+function TObjectListInterceptor<T>.TypeObjectsConverter(Data: TObject): TListOfObjects;
+var
+  I: Integer;
+  list: TObjectList<T>;
+begin
+  list := TObjectList<T>(Data);
+  SetLength(Result, list.Count);
+  for I := 0 to list.Count - 1 do
+    Result[I] := list.Items[I];
 end;
 
 destructor TUTCDateTimeInterceptor.Destroy;
@@ -225,9 +224,9 @@ begin
   inherited Create(ctObject, rtString, TUTCDateTimeInterceptor);
 end;
 
-constructor JsonObjectListAttribute.Create(InterceptorType: TClass);
+constructor JsonObjectListAttribute<T>.Create;
 begin
-  inherited Create(ctObjects, rtObjects, InterceptorType);
+  inherited Create(ctTypeObjects, rtObjects, TObjectListInterceptor<T>);
 end;
 
 class function TConvert.FromJSON<T>(AJsonValue: TJSONValue): T;
