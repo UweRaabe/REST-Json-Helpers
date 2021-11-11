@@ -238,7 +238,6 @@ class function TConvert.FromJSON<T>(const AJsonString: string): T;
 var
   jsonValue: TJSONValue;
 begin
-  Result := nil;
   jsonValue := TJSONValue.ParseJSONValue(AJsonString);
   try
     Result := FromJSON<T>(jsonValue);
@@ -249,11 +248,10 @@ end;
 
 class function TConvert.FromJSON<T>(AJsonValue: TJSONValue): T;
 begin
-  Result := nil;
   if AJsonValue is TJSONObject then
-  begin
-    Result := FromJSON<T>(TJSONObject(AJsonValue));
-  end;
+    Result := FromJSON<T>(TJSONObject(AJsonValue))
+  else
+    raise EJSONException.Create('AJsonValue must be a TJSONObject');
 end;
 
 class function TConvert.FromJSON<T>(AJsonObject: TJSONObject): T;
@@ -262,13 +260,24 @@ begin
     joBytesFormatArray, joIndentCaseCamel{$IFEND}]);
 end;
 
+class function TConvert.FromJSONArray<T>(const AJsonString: string): TArray<T>;
+var
+  jsonValue: TJSONValue;
+begin
+  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
+  try
+    Result := FromJSONArray<T>(jsonValue);
+  finally
+    jsonValue.Free;
+  end;
+end;
+
 class function TConvert.FromJSONArray<T>(AJsonValue: TJSONValue): TArray<T>;
 begin
-  Result := nil;
   if AJsonValue is TJSONArray then
-  begin
-    Result := FromJSONArray<T>(TJSONArray(AJsonValue));
-  end;
+    Result := FromJSONArray<T>(TJSONArray(AJsonValue))
+  else
+    raise EJSONException.Create('AJsonValue must be a TJSONArray');
 end;
 
 class function TConvert.FromJSONArray<T>(AJsonArray: TJSONArray): TArray<T>;
@@ -279,19 +288,6 @@ begin
   for I := 0 to Length(Result) - 1 do
   begin
     Result[I] := FromJSON<T>(AJsonArray[I]);
-  end;
-end;
-
-class function TConvert.FromJSONArray<T>(const AJsonString: string): TArray<T>;
-var
-  jsonValue: TJSONValue;
-begin
-  Result := nil;
-  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
-  try
-    Result := FromJSONArray<T>(jsonValue);
-  finally
-    jsonValue.Free;
   end;
 end;
 
