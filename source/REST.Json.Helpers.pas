@@ -45,7 +45,12 @@ type
   protected
     class procedure ProcessJSON(AJsonObject: TJSONObject);
   public
-    class function FromJSON<T: class, constructor>(AJsonValue: TJSONValue): T; static;
+    class function FromJSON<T: class, constructor>(const AJsonString: string): T; overload; static;
+    class function FromJSON<T: class, constructor>(AJsonValue: TJSONValue): T; overload; static;
+    class function FromJSON<T: class, constructor>(AJsonObject: TJSONObject): T; overload; static;
+    class function FromJSONArray<T: class, constructor>(const AJsonString: string): TArray<T>; overload; static;
+    class function FromJSONArray<T: class, constructor>(AJsonValue: TJSONValue): TArray<T>; overload; static;
+    class function FromJSONArray<T: class, constructor>(AJsonArray: TJSONArray): TArray<T>; overload; static;
     class function ToJSON(Source: TObject): TJSONObject; static;
     class function ToJSONString(Source: TObject): string;
   end;
@@ -229,11 +234,64 @@ begin
   inherited Create(ctTypeObjects, rtObjects, TObjectListInterceptor<T>);
 end;
 
+class function TConvert.FromJSON<T>(const AJsonString: string): T;
+var
+  jsonValue: TJSONValue;
+begin
+  Result := nil;
+  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
+  try
+    Result := FromJSON<T>(jsonValue);
+  finally
+    jsonValue.Free;
+  end;
+end;
+
 class function TConvert.FromJSON<T>(AJsonValue: TJSONValue): T;
 begin
   Result := nil;
-  if AJsonValue is TJSONObject then begin
-    Result := TJson.JsonToObject<T>(TJSONObject(AJsonValue), [joDateIsUTC, joDateFormatISO8601]);
+  if AJsonValue is TJSONObject then
+  begin
+    Result := FromJSON<T>(TJSONObject(AJsonValue));
+  end;
+end;
+
+class function TConvert.FromJSON<T>(AJsonObject: TJSONObject): T;
+begin
+  Result := TJson.JsonToObject<T>(TJSONObject(AJsonObject), [joDateIsUTC, joDateFormatISO8601{$IF RTLVersion >= 34.0},
+    joBytesFormatArray, joIndentCaseCamel{$IFEND}]);
+end;
+
+class function TConvert.FromJSONArray<T>(AJsonValue: TJSONValue): TArray<T>;
+begin
+  Result := nil;
+  if AJsonValue is TJSONArray then
+  begin
+    Result := FromJSONArray<T>(TJSONArray(AJsonValue));
+  end;
+end;
+
+class function TConvert.FromJSONArray<T>(AJsonArray: TJSONArray): TArray<T>;
+var
+  I: Integer;
+begin
+  SetLength(Result, AJsonArray.Count);
+  for I := 0 to Length(Result) - 1 do
+  begin
+    Result[I] := FromJSON<T>(AJsonArray[I]);
+  end;
+end;
+
+class function TConvert.FromJSONArray<T>(const AJsonString: string): TArray<T>;
+var
+  jsonValue: TJSONValue;
+begin
+  Result := nil;
+  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
+  try
+    Result := FromJSONArray<T>(jsonValue);
+  finally
+    jsonValue.Free;
   end;
 end;
 
@@ -274,15 +332,8 @@ begin
 end;
 
 class function TConvert.ToJSONString(Source: TObject): string;
-var
-  obj: TJSONObject;
 begin
-  obj := ToJSON(Source);
-  try
-    Result := obj.ToString;
-  finally
-    obj.Free;
-  end;
+  Result := TJson.ObjectToJsonString(Source, [joDateIsUTC, joDateFormatISO8601]);
 end;
 
 function TUTCDateTimeInterceptor.TStringProxyInterceptor.TypeStringConverter(Data: TObject): string;
