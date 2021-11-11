@@ -31,21 +31,34 @@ type
     ...
   end;
 ```
-## JsonObjectList
-_JsonObjectList_ is an attribute that should be applied to a _TObjectList<T>_ instance or descendant. It makes the object being serialized to an array of object and back again. It needs an interceptor class derived from _TObjectListInterceptor<T>_ as parameter. 
-It also requires a _JSONOwned(False)_ companion.
+## JsonObjectList\<T>
+_JsonObjectList\<T>_ is a generic attribute that must be derived to resolve the generic. The derived attribute can then be applied to a _TObjectList\<T>_ descendant. It makes the list being serialized to an array of object and back again.
+  
+Each field holding such a list requires a _JSONOwned(False)_ attribute to avoid the list instance being destroyed during deserialisation.
   
 Usage:
 ```Delphi
 type
-  TContactList = TIdentList<TContact>;
-  TContactListInterceptor = TObjectListInterceptor<TContact>;
+  TContact = class
+    ...
+  end;
+
+  JsonObjectListContactAttribute = class(JsonObjectList<TContact>); { the class keyword is mandatory }
+  
+type  { this type keyword is mandatory }
+  [JsonObjectListContact]
+  TContactList = class(TIdentList<TContact>);
 
 type
   TMyAddressBook = class
   private
-    [JSONOwned(False), JsonObjectList(TContactListInterceptor)]
+    [JSONOwned(False)] { this attribute is mandatory to avoid FContacts being destroyed }
     FContacts: TContactList;
     ...
 ```
-The alias _TContactList_ is actually not needed, but the _TContactListInterceptor_ is mandatory - as well as at least one _type_ keyword between the alias declaration and the use of the alias inside the attribute.
+The new attribute (_JsonObjectListContactAttribute_) as well as the new list (_TContactList_)  must **not** be an alias - the **class** keyword is mandatory. Also there must be at least one **type** keyword between the declaration and the use of the attribute.
+
+**Note:** The previous version required the declaration of an TObjectListInterceptor\<T> descendant, which was given to a non-generic version of the attribute. The new approach is much easier to use.
+
+## TConvert
+_TConvert_ is a record providing some helpful methods to convert to and from Json. In addition to Json objects it can also produce Json arrays, as well as revert them with its _FromJSONArray_ methods.
