@@ -238,7 +238,7 @@ class function TConvert.FromJSON<T>(const AJsonString: string): T;
 var
   jsonValue: TJSONValue;
 begin
-  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
+  jsonValue := TJSONObject.ParseJSONValue(AJsonString);
   try
     Result := FromJSON<T>(jsonValue);
   finally
@@ -264,7 +264,7 @@ class function TConvert.FromJSONArray<T>(const AJsonString: string): TArray<T>;
 var
   jsonValue: TJSONValue;
 begin
-  jsonValue := TJSONValue.ParseJSONValue(AJsonString);
+  jsonValue := TJSONObject.ParseJSONValue(AJsonString);
   try
     Result := FromJSONArray<T>(jsonValue);
   finally
@@ -287,7 +287,7 @@ begin
   SetLength(Result, AJsonArray.Count);
   for I := 0 to Length(Result) - 1 do
   begin
-    Result[I] := FromJSON<T>(AJsonArray[I]);
+    Result[I] := FromJSON<T>(AJsonArray.Items[I]);
   end;
 end;
 
