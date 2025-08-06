@@ -43,7 +43,7 @@ type
     ...
   end;
 
-  JsonObjectListContactAttribute = class(JsonObjectList<TContact>); { the class keyword is mandatory }
+  JsonObjectListContactAttribute = class(JsonObjectListAttribute<TContact>); { the class keyword is mandatory }
   
 type  { this type keyword is mandatory }
   [JsonObjectListContact]
