@@ -31,8 +31,8 @@ type
     ...
   end;
 ```
-## JsonObjectList\<T>
-_JsonObjectList\<T>_ is a generic attribute that must be derived to resolve the generic. The derived attribute can then be applied to a _TObjectList\<T>_ descendant. It makes the list being serialized to an array of object and back again.
+## JsonObjectListAttribute\<T>
+_JsonObjectListAttribute\<T>_ is a generic attribute that must be derived to resolve the generic. The derived attribute can then be applied to a _TObjectList\<T>_ descendant. It makes the list being serialized to an array of object and back again.
   
 Each field holding such a list requires a _JSONOwned(False)_ attribute to avoid the list instance being destroyed during deserialisation.
   
